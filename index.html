@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVC</title>
+    <link href="./index.css" rel="stylesheet">
+    <script>
+        async function getEvent(url) {
+            console.log('Get event.')
+            let x = await fetch(url);
+            let y = await x.json();
+            console.log(y)
+            return y
+        }
+        
+        async function postEvent(url, event) {
+            console.log('Post event.')  
+            const rawResponse = await fetch(url, {
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            })
+            const content = await rawResponse.json();
+            console.log(content);
+        }
+        
+        async function putEvent(url, event, id) {
+            console.log('Put event.')
+            let x = await fetch(url+'/'+id, {
+                method: 'PUT',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            });
+            const content = await x.json();
+            console.log(content);
+        }
+
+        async function deleteEvent(url, id) {
+            console.log('Delete event.')
+            let x = await fetch(url + '/' + id, {
+                method: 'DELETE'
+            });
+            let y = await x.json();
+            console.log(y);
+        }
+
+        function addNewEvent() {
+            const e = document.createElement("div")
+            e.className = "input-box"
+            const e1 = document.createElement("input")
+            e1.className = "input-new-event"
+            const e2 = document.createElement("input")
+            e2.className = "input-new-event"
+            e2.type = "date"
+            const e3 = document.createElement("input")
+            e3.className = "input-new-event"
+            e3.type = "date"
+            
+            const b1 = document.createElement("button")
+            b1.className = "plus-button"
+            // b1.innerHTML = 'plus'
+            b1.id = "button" + Math.random() * 10000
+            b1.setAttribute('onClick','postNewEvent(this.id)')
+
+            const b2 = document.createElement("button")
+            b2.className = "cross-button"
+            // b2.innerHTML = 'cross'
+            b2.id = "button" + Math.random() * 10000
+            b2.setAttribute('onClick','deleteNewEvent(this.id)')
+
+            e.append(e1)
+            e.append(e2)
+            e.append(e3)
+            e.append(b1)
+            e.append(b2)
+            document.getElementById("event-content-id").append(e)
+        }
+
+        async function postNewEvent(id) {
+            const end  = document.getElementById(id).previousSibling
+            const start = end.previousSibling
+            const event = start.previousSibling
+            var val = {
+                eventName: event.value, 
+                startDate: start.value, 
+                endDate: end.value
+            }
+            await postEvent('http://localhost:3000/events', val)
+            initialEvent()
+        }
+
+        function deleteNewEvent(id) {
+            const par = document.getElementById(id).parentElement
+            par.remove()
+        }
+
+        function deleteSavedEvent(id) {
+            const par = document.getElementById(id).parentElement
+            par.remove()
+            const arr = id.split("-")
+            deleteEvent("http://localhost:3000/events",arr[2])
+        }
+
+        function editNewEvent(id) {
+            const par = document.getElementById(id).parentElement
+            // to do ...            
+        }
+
+        async function initialEvent() {
+            document.getElementById("event-content-id").innerHTML = ''
+            const events = await getEvent("http://localhost:3000/events")
+            events.forEach(initialSingleEvent)
+        }
+
+        function initialSingleEvent(event) {
+            const e = document.createElement("div")
+            e.className = "event-box"
+            const e1 = document.createElement("div")
+            e1.className = "event-content"
+            e1.innerHTML = event["eventName"]
+            const e2 = document.createElement("div")
+            e2.className = "event-content"
+            e2.innerHTML = event["startDate"]
+            const e3 = document.createElement("div")
+            e3.className = "event-content"
+            e3.innerHTML = event["endDate"]
+
+            const b1 = document.createElement("button")
+            b1.className = "pen-button"
+            // b1.innerHTML = 'pen'
+            b1.id = "button" + Math.random() * 10000
+            b1.setAttribute('onClick','editNewEvent(this.id)')
+
+            const b2 = document.createElement("button")
+            b2.className = "trash-button"
+            // b2.innerHTML = 'trash'
+            b2.id = "button-event-" + event["id"]
+            b2.setAttribute('onClick','deleteSavedEvent(this.id)')
+
+            e.append(e1)
+            e.append(e2)
+            e.append(e3)
+            e.append(b1)
+            e.append(b2)
+            document.getElementById("event-content-id").append(e)
+        }
+
+    </script>
+</head>
+<body>
+    <!-- <div id="demo">hi</div>
+    <button onclick="getEvent('http://localhost:3000/events')">ssss </button>
+    <button onclick="postEvent('http://localhost:3000/events', 
+    {eventName:'Music Festival2', startDate: '2023-01-20', endDate: '2023-01-21'})">ssss2 </button>
+    <button onclick="putEvent('http://localhost:3000/events', {eventName:'Music Festival2', startDate: '2023-01-20', endDate: '2023-01-21'}, 4)">ssss3 </button>
+    <button onclick="deleteEvent('http://localhost:3000/events', 3)">ssss4 </button> -->
+    <div class="event-list-app">
+        <button class="event_add_button" onclick="addNewEvent()">Add New Event</button>
+        <div class="event-list">
+            <div class="event-header-box">
+                <div class="event-header"><b>Event</b></div>
+                <div class="event-header"><b>Start</b></div>
+                <div class="event-header"><b>End</b></div>
+                <div class="event-header"><b>Actions</b></div>
+            </div>
+            
+            <div class="event-content-box" id="event-content-id">
+                
+            </div>
+        </div>
+    </div>
+    <script>
+        initialEvent()
+    </script>
+</body>
+</html>
